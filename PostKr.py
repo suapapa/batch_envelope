@@ -41,7 +41,7 @@ class PostKr:
             action = 'ems'
             if lang == 'en':
                 action +='Eng'
-            action = 'Trace'
+            action += 'Trace'
         else:
             action = 'trace'
         return self._postRequest(action, itemID)
