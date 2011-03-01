@@ -1,4 +1,15 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# UnoDocu.py - easy frontend for Python-UNO,
+#     http://udk.openoffice.org/python/python-bridge.html
+#
+# Copyright (C) 2011 Homin Lee <ff4500@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 
 # This program based on the sorce from http://lucasmanual.com/mywiki/OpenOffice
 
