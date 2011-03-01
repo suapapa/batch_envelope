@@ -11,9 +11,11 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
+# FYI: Python-UNO bridge http://udk.openoffice.org/python/python-bridge.html
 # This program based on the sorce from http://lucasmanual.com/mywiki/OpenOffice
 
 import uno
+import unohelper
 import string
 
 #You should have openoffice listening on specified port already. 
@@ -23,23 +25,33 @@ class UnoDocu:
     def __init__(self, port=2002):
         '''Load necessary items'''
         local = uno.getComponentContext()
-        resolver = local.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", local)
-        context = resolver.resolve("uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
-        self._desktop = context.ServiceManager.createInstanceWithContext("com.sun.star.frame.Desktop", context)
+        resolver = local.ServiceManager.createInstanceWithContext(\
+                "com.sun.star.bridge.UnoUrlResolver", local)
+        self._ctx = resolver.resolve(\
+                "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
+        self._desktop = self._ctx.ServiceManager.createInstanceWithContext(\
+                "com.sun.star.frame.Desktop", self._ctx)
 
-    def loadTemplate(self, uri):
+    def _path2Url(self, path):
+        if not path.startswith('file://'):
+            path = os.path.realpath(path)
+            if os.path.exists(path):
+                return unohelper.systemPathToFileUrl(path)
+        print 'ERR! given path is invalid'
+        return path
+
+    def loadTemplate(self, path):
         '''Load file template'''
-        #_document = _desktop.loadComponentFromURL("file:///home/lucas/TemplateLetter.odt" ,"_blank", 0, ())
-        self._document = self._desktop.loadComponentFromURL(uri ,"_blank", 0, ())
+        url = self._path2Url(path)
+        self._document = self._desktop.loadComponentFromURL(url ,"_blank", 0, ())
         _cursor = self._document.Text.createTextCursor()
 
-    def findAndReplace(self, find=None, replace=None):
+    def findAndReplace(self, find, replace, caseSensitive=False, wordSearch=False):
         #Create Search Descriptor
         search = self._document.createSearchDescriptor()
-        #What to search for
         search.SearchString = unicode(find)
-        #search.SearchCaseSensitive = True
-        #search.SearchWords = True
+        search.SearchCaseSensitive = caseSensitive
+        search.SearchWords = wordSearch
         print 'starting a search'
         found = self._document.findFirst(search)
         if found:
@@ -48,19 +60,26 @@ class UnoDocu:
             found.String = string.replace(found.String, unicode(find), unicode(replace))
             found = self._document.findNext(found.End, search)
 
-    def save(self, uri):
+    def exportToPdf(self, uri):
+        '''TODO: http://wiki.services.openoffice.org/wiki/API/Tutorials/PDF_export'''
+        pass
+
+    def save(self, path):
         '''Save document'''
-        #document.storeAsURL("file:///home/lucas/letter2.odt",())
-        self._document.storeAsURL(uri, ())
+        url = self._path2Url(path)
+        self._document.storeAsURL(url, ())
 
     def close(self):
         '''Close'''
         self._document.dispose()
 
+    def sync(self):
+        self._ctx.ServiceManager
+
 if __name__ == '__main__':
     import os
     unoDoc = UnoDocu()
-    unoDoc.loadTemplate('file://' + os.path.realpath('envelope_templete.odt'))
+    unoDoc.loadTemplate('envelope_templete.odt')
 
     data = {}
     data['$ADDR_LINE1'] = 'Addr line 1'
@@ -73,5 +92,6 @@ if __name__ == '__main__':
     for find, replace in data.items():
         unoDoc.findAndReplace(find, replace)
 
+    unoDoc.sync()
 #    unoDoc.save('')
-    unoDoc.close()
+#    unoDoc.close()
