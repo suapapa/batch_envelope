@@ -61,12 +61,14 @@ if __name__ == '__main__':
                     help="phone_number")
     optPsr.add_option('-c', '--postcode', type='string',
                     help="postcode")
+    optPsr.add_option('-s', '--searchpost', type='string',
+                    help="postcode searcg")
     optPsr.add_option('-i', '--cnt', type='string',
                     help="HUMA cnt")
     (opts, args) = optPsr.parse_args()
 
     post = PostKr('5e12d7ed7799470b81298981375429')
-    if opts.postcode:
+    if opts.searchpost:
         ret = post.searchPostalCode(opts.postcode.decode('utf-8'))
         for pc, addr in ret:
             print pc, addr
@@ -82,8 +84,10 @@ if __name__ == '__main__':
             print 'ERR: Ambigious post search result', ret
             exit(-1)
         pCode, _addr = ret[0]
-        pCode = formatPostalCode(pCode)
         # print "found postcode %s for addr %s"%(pCode, _addr)
+    else:
+        pCode = opts.postcode
+    pCode = formatPostalCode(pCode)
 
     phoneNumber = ''
     if opts.phone:
