@@ -39,8 +39,33 @@ class PostKr:
         soup = BS(xml)
         ret = []
         for item in soup.post.itemlist.findAll('item'):
-            ret.append((item.postcd.string, item.address.string))
+            ret.append((item.postcd.string, "%s"%(item.address.string)))
         return ret
+
+    def smartSearchPostalCode(self, addr):
+        atom = addr.split(' ')
+        searchMeter = [
+            '교'.decode('utf-8'), # 학교
+            '읍'.decode('utf-8'),
+            '면'.decode('utf-8'),
+            '동'.decode('utf-8'),
+        ]
+        for i in range(len(atom)):
+            if atom[i][-1] in searchMeter:
+                break;
+        hintA, searchKey, hintB = atom[i-1:i+2]
+        candidate = self.searchPostalCode(searchKey)
+        if len(candidate) == 1: return candidate
+
+        tempCandidate = filter(lambda(x):x[1].find(hintB)!=(-1), candidate)
+        if tempCandidate: candidate = tempCandidate
+        if len(candidate) == 1: return candidate
+
+        tempCandidate = filter(lambda(x):x[1].find(hintA)!=(-1), candidate)
+        if tempCandidate: candidate = tempCandidate
+        if len(candidate) == 1: return candidate
+
+        return candidate
 
     def tracePackage(self, itemID, lang='ko'):
         '''종추적, EMS 종추적: itemID로 EMS 여부를 자동 판단합니다'''

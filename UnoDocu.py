@@ -17,6 +17,7 @@
 import uno
 import unohelper
 import string
+import os
 
 #You should have openoffice listening on specified port already. 
 #    $ soffice "-accept=socket,host=localhost,port=2002;urp;"
@@ -33,7 +34,7 @@ class UnoDocu:
                 "com.sun.star.frame.Desktop", self._ctx)
 
     def _path2Url(self, path):
-        return unohelper.systemPathToFileUrl(path)
+        return unohelper.systemPathToFileUrl(os.path.realpath(path))
 
     def loadTemplate(self, path):
         '''Load file template'''
