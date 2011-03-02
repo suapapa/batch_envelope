@@ -33,12 +33,7 @@ class UnoDocu:
                 "com.sun.star.frame.Desktop", self._ctx)
 
     def _path2Url(self, path):
-        if not path.startswith('file://'):
-            path = os.path.realpath(path)
-            if os.path.exists(path):
-                return unohelper.systemPathToFileUrl(path)
-        print 'ERR! given path is invalid'
-        return path
+        return unohelper.systemPathToFileUrl(path)
 
     def loadTemplate(self, path):
         '''Load file template'''
@@ -52,16 +47,17 @@ class UnoDocu:
         search.SearchString = unicode(find)
         search.SearchCaseSensitive = caseSensitive
         search.SearchWords = wordSearch
-        print 'starting a search'
         found = self._document.findFirst(search)
-        if found:
-            print 'Found %s' % find
         while found:
             found.String = string.replace(found.String, unicode(find), unicode(replace))
             found = self._document.findNext(found.End, search)
 
     def exportToPdf(self, uri):
         '''TODO: http://wiki.services.openoffice.org/wiki/API/Tutorials/PDF_export'''
+        pass
+
+    def printOut(self):
+        '''TODO: http://www.mail-archive.com/dev@openoffice.org/msg11654.html'''
         pass
 
     def save(self, path):
@@ -78,20 +74,31 @@ class UnoDocu:
 
 if __name__ == '__main__':
     import os
+    import time
+
+    os.system('soffice "-accept=socket,host=localhost,port=2002;urp;"')
+    time.sleep(1)
+
     unoDoc = UnoDocu()
     unoDoc.loadTemplate('envelope_templete.odt')
 
-    data = {}
-    data['$ADDR_LINE1'] = 'Addr line 1'
-    data['$ADDR_LINE2'] = 'Addr line 2'
-    data['$NAME'] = 'Gildong Hong'
-    data['$PHONE'] = '010-1234-5678'
-    data['$CNT'] = '100'
-    data['$POST'] = '1 2 3 - 4 5 6'
+    data = [
+        ('$ADDR_LINE1', 'Addr line 1'),
+        ('$ADDR_LINE2', 'Addr line 2'),
+        ('$NAME', 'Gildong Hong'),
+        ('$PHONE', '010-1234-5678'),
+        ('$CNT', '100'),
+        ('$POST', '1 2 3 - 4 5 6'),
+    ]
 
-    for find, replace in data.items():
+    for find, replace in data:
         unoDoc.findAndReplace(find, replace)
 
     unoDoc.sync()
 #    unoDoc.save('')
 #    unoDoc.close()
+
+    # sometimes, comes up Segmentation fault in shell without this
+    time.sleep(1)
+
+# vim: et sw=4 fenc=utf-8:

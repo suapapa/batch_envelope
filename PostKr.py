@@ -14,6 +14,7 @@
 # http://biz.epost.go.kr/eportal/custom/custom_10.jsp?subGubun=sub_4&subGubun_1=cum_20
 
 import urllib2
+from BeautifulSoup import BeautifulStoneSoup as BS
 
 class PostKr:
     _url = 'http://biz.epost.go.kr/KpostPortal/openapi?regkey=%s&target=%s&query=%s'
@@ -25,18 +26,25 @@ class PostKr:
             self._regKey = regKey
 
     def _postRequest(self, target, query):
-        url = self._url%(self._regKey, target, query)
+        query = query.encode('euc-kr')
+        url = self._url%(self._regKey, target, urllib2.quote(query))
+        # print url
         req = urllib2.Request(url, None, {"Accept-Language":"ko"})
         return urllib2.urlopen(req).read()
 
     def searchPostalCode(self, searchKey):
         '''우편번호 검색: searchKey 읍/면/동으로 유니코드 입력'''
         action = 'post'
-        searchKey = searchKey.encode('euc-kr')
-        return self._postRequest(action, searchKey)
+        xml = self._postRequest(action, searchKey)
+        soup = BS(xml)
+        ret = []
+        for item in soup.post.itemlist.findAll('item'):
+            ret.append((item.postcd.string, item.address.string))
+        return ret
 
     def tracePackage(self, itemID, lang='ko'):
         '''종추적, EMS 종추적: itemID로 EMS 여부를 자동 판단합니다'''
+        itemID = itemID.replace('-', '')
         if itemID.startswith('EM'):
             action = 'ems'
             if lang == 'en':
@@ -52,3 +60,4 @@ if __name__ == '__main__':
     print postKr.searchPostalCode('광정동'.decode('utf-8')).decode('euc-kr')
     print postKr.tracePackage('EM123456789KR').decode('euc-kr')
 
+# vim: et sw=4 fenc=utf-8:
