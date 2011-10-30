@@ -81,7 +81,10 @@ if __name__ == '__main__':
         # postcode, _addr = post.smartSearchPostalCode(addr)
         ret = post.smartSearchPostalCode(addr)
         if not len(ret) == 1:
-            print 'ERR: Ambigious post search result', ret
+            print 'ERR: Ambigious post search result.'
+            for postcode, addr in ret:
+                print postcode, addr.encode('utf-8')
+            print '     select one with -c' 
             exit(-1)
         pCode, _addr = ret[0]
         # print "found postcode %s for addr %s"%(pCode, _addr)
