@@ -42,8 +42,15 @@ def formatPostalCode(postcode):
     p1, p2, p3, p4, p5, p6 = postcode
     return '%c %c %c - %c %c %c'%(p1, p2, p3, p4, p5, p6)
 
+def loadConfig():
+    import ConfigParser
+    config = ConfigParser.RawConfigParser()
+    config.read('config.ini')
+    return config
+
 def test():
-    post = PostKr('5e12d7ed7799470b81298981375429')
+    config = loadConfig()
+    post = PostKr(config.get('apikey', 'poskr')
     print post.tracePackage('11113-89170122').decode('euc-kr')
     ret =  post.smartSearchPostalCode('경기도 의왕시 포일동 한일나래아파트 201-312'.decode('utf-8'))
     for pc, addr in ret:
@@ -67,9 +74,10 @@ if __name__ == '__main__':
                     help="HUMA cnt")
     (opts, args) = optPsr.parse_args()
 
-    post = PostKr('5e12d7ed7799470b81298981375429')
+    config = loadConfig()
+    post = PostKr(config.get('apikey', 'poskr')
     if opts.searchpost:
-        ret = post.searchPostalCode(opts.postcode.decode('utf-8'))
+        ret = post.searchPostalCode(opts.searchpost.decode('utf-8'))
         for pc, addr in ret:
             print pc, addr
         exit(0)

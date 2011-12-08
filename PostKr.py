@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# PostKr.py - 인터넷우체국 오픈API 파이썬 프론트엔드 
+# PostKr.py - 인터넷우체국 오픈API 파이썬 프론트엔드
 #
 # Copyright (C) 2011 Homin Lee <ff4500@gmail.com>
 #
@@ -82,7 +82,11 @@ class PostKr:
 if __name__ == '__main__':
     APIKEY = '' #여기에 API 키를 넣으세요
     postKr = PostKr(APIKEY)
-    print postKr.searchPostalCode('광정동'.decode('utf-8')).decode('euc-kr')
-    print postKr.tracePackage('EM123456789KR').decode('euc-kr')
+
+    result = postKr.searchPostalCode('광정동'.decode('utf-8'))
+    #result = postKr.tracePackage('EM123456789KR').decode('euc-kr')
+
+    for item in result:
+        print ' : '.join(map(lambda x: x.encode('utf-8'), item))
 
 # vim: et sw=4 fenc=utf-8:
