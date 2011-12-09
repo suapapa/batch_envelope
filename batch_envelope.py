@@ -50,7 +50,7 @@ def loadConfig():
 
 def test():
     config = loadConfig()
-    post = PostKr(config.get('apikey', 'poskr')
+    post = PostKr(config.get('apikey', 'postkr'))
     print post.tracePackage('11113-89170122').decode('euc-kr')
     ret =  post.smartSearchPostalCode('경기도 의왕시 포일동 한일나래아파트 201-312'.decode('utf-8'))
     for pc, addr in ret:
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     (opts, args) = optPsr.parse_args()
 
     config = loadConfig()
-    post = PostKr(config.get('apikey', 'poskr')
+    post = PostKr(config.get('apikey', 'postkr'))
     if opts.searchpost:
         ret = post.searchPostalCode(opts.searchpost.decode('utf-8'))
         for pc, addr in ret:
@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
     import os
     import time
-    os.system('soffice "-accept=socket,host=localhost,port=2002;urp;"')
+    os.system('soffice "--accept=socket,host=localhost,port=2002;urp;"')
     time.sleep(1)
 
     unoDoc = UnoDocu()
