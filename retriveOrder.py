@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # Copyright (C) 2007 Google Inc.
 #
@@ -31,6 +32,7 @@ import getopt
 import sys
 import string
 
+from BeautifulSoup import BeautifulStoneSoup as BS
 
 class SimpleCRUD:
 
@@ -44,22 +46,28 @@ class SimpleCRUD:
     self.curr_wksht_id = ''
     self.list_feed = None
     
-  def _PromptForSpreadsheet(self):
-    # Get the list of spreadsheets
+  def _SelectSpreadseet(self, name):
     feed = self.gd_client.GetSpreadsheetsFeed()
-    self._PrintFeed(feed)
-    input = raw_input('\nSelection: ')
-    id_parts = feed.entry[string.atoi(input)].id.text.split('/')
-    self.curr_key = id_parts[len(id_parts) - 1]
-  
-  def _PromptForWorksheet(self):
-    # Get the list of worksheets
+    for i, entry in enumerate(feed.entry):
+      if entry.title.text == name:
+        id_parts = feed.entry[i].id.text.split('/')
+        self.curr_key = id_parts[-1]
+        return
+
+    print ("ERR! can't find spreadsheet, %s"%name)
+    sys.exit(1)
+
+  def _SelectWorksheet(self, name = "Sheet1"):
     feed = self.gd_client.GetWorksheetsFeed(self.curr_key)
-    self._PrintFeed(feed)
-    input = raw_input('\nSelection: ')
-    id_parts = feed.entry[string.atoi(input)].id.text.split('/')
-    self.curr_wksht_id = id_parts[len(id_parts) - 1]
-  
+    for i, entry in enumerate(feed.entry):
+      if entry.title.text == name:
+        id_parts = feed.entry[i].id.text.split('/')
+        self.curr_wksht_id = id_parts[-1]
+        return
+
+    print ("ERR! can't find spreadsheet, %s"%name)
+    sys.exit(1)
+
   def _PromptForCellsAction(self):
     print ('dump\n'
            'update {row} {col} {input_value}\n'
@@ -113,6 +121,23 @@ class SimpleCRUD:
     # Get the list feed
     self.list_feed = self.gd_client.GetListFeed(self.curr_key, self.curr_wksht_id)
     self._PrintFeed(self.list_feed)
+
+  def _GetShippingList(self):
+    self.list_feed = self.gd_client.GetListFeed(self.curr_key, self.curr_wksht_id)
+    strIsPayed = "IsPayed".lower()
+    strIsShipped = "IsShipped".lower()
+    shippingList = []
+    for e in self.list_feed.entry:
+      if not e.custom[strIsPayed.lower()].text:
+        e.custom[strIsPayed].text = '0'
+      if not e.custom[strIsShipped.lower()].text:
+        e.custom[strIsShipped].text = '0'
+      if e.custom[strIsPayed].text == '1' and e.custom[strIsShipped].text == '0':
+        shippingList.append(e)
+    for item in shippingList:
+      for key in item.custom:
+        print "- %s: %s"%(key, item.custom[key].text)
+
     
   def _ListInsertAction(self, row_data):
     entry = self.gd_client.InsertRow(self._StringToDictionary(row_data), 
@@ -139,6 +164,26 @@ class SimpleCRUD:
       temp = param.split('=')
       dict[temp[0]] = temp[1]
     return dict
+
+  def _getData(self, feed):
+    returnData = []
+    for i, entry in enumerate(feed.entry):
+      if isinstance(feed, gdata.spreadsheet.SpreadsheetsCellsFeed):
+        idx, title = "%s"%entry.title.text, "%s"%entry.content.text
+      elif isinstance(feed, gdata.spreadsheet.SpreadsheetsListFeed):
+        # idx, title = i, "%s %s"%(entry.title.text, entry.content.text)
+        # Print this row's value for each column (the custom dictionary is
+        # built using the gsx: elements in the entry.)
+        # print 'Contents:'
+        # for key in entry.custom:  
+        #   print '  %s: %s' % (key, entry.custom[key].text) 
+        #  print '\n',
+        pass
+      else:
+        idx, title = "%s"%i, "%s"%entry.title.text
+
+      returnData.append((idx, title))
+    return returnData
   
   def _PrintFeed(self, feed):
     for i, entry in enumerate(feed.entry):
@@ -159,8 +204,10 @@ class SimpleCRUD:
     print 'Invalid input: %s\n' % (input)
     
   def Run(self):
-    self._PromptForSpreadsheet()
-    self._PromptForWorksheet()
+    self._SelectSpreadseet("HUMA rev5 신청서")
+    self._SelectWorksheet("Sheet2")
+    self._GetShippingList();
+#self._PromptForWorksheet()
     input = raw_input('cells or list? ')
     if input == 'cells':
       while True:
