@@ -32,8 +32,6 @@ import getopt
 import sys
 import string
 
-from BeautifulSoup import BeautifulStoneSoup as BS
-
 class SimpleCRUD:
 
   def __init__(self, email, password):
@@ -205,7 +203,7 @@ class SimpleCRUD:
     
   def Run(self):
     self._SelectSpreadseet("HUMA rev5 신청서")
-    self._SelectWorksheet("Sheet2")
+    self._SelectWorksheet("Sheet1")
     self._GetShippingList();
 #self._PromptForWorksheet()
     input = raw_input('cells or list? ')
@@ -223,7 +221,7 @@ def main():
   config = ConfigParser.RawConfigParser()
   config.read('config.ini')
         
-  sample = SimpleCRUD(config.get('gdoc', 'user'), config.get('gdoc', 'pw'))
+  sample = SimpleCRUD(config.get('google', 'user'), config.get('google', 'pw'))
   sample.Run()
 
 
