@@ -109,8 +109,6 @@ if __name__ == '__main__':
 
     import os
     import time
-    os.system('soffice "--accept=socket,host=localhost,port=2002;urp;"')
-    time.sleep(1)
 
     unoDoc = UnoDocu()
     unoDoc.loadTemplate('envelope_templete.odt')

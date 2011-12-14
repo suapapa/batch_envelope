@@ -18,6 +18,8 @@ import uno
 import unohelper
 import string
 import os
+import time
+from com.sun.star.connection import NoConnectException
 
 #You should have openoffice listening on specified port already. 
 #    $ soffice "-accept=socket,host=localhost,port=2002;urp;"
@@ -28,8 +30,15 @@ class UnoDocu:
         local = uno.getComponentContext()
         resolver = local.ServiceManager.createInstanceWithContext(\
                 "com.sun.star.bridge.UnoUrlResolver", local)
-        self._ctx = resolver.resolve(\
-                "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
+        try:
+            self._ctx = resolver.resolve(\
+                    "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
+        except NoConnectException:
+            os.system('soffice --invisible "--accept=socket,host=localhost,port=2002;urp;"&')
+            time.sleep(3)
+            self._ctx = resolver.resolve(\
+                    "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
+
         self._desktop = self._ctx.ServiceManager.createInstanceWithContext(\
                 "com.sun.star.frame.Desktop", self._ctx)
 
